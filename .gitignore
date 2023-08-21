@@ -1,0 +1,6 @@
+venv/
+conda/
+output/
+
+__pycache__/
+*.pyc

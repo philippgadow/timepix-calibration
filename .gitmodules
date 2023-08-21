@@ -1,0 +1,3 @@
+[submodule "corryvreckan"]
+	path = corryvreckan
+	url = ssh://git@gitlab.cern.ch:7999/corryvreckan/corryvreckan.git

@@ -1,0 +1,36 @@
+[project]
+name = "pixel_calibration"
+description = "Silicon pixel detector calibration software"
+authors = [{name="Philipp Gadow"}]
+dynamic = ["version"]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9.1"
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "mplhep",
+  "pandas",
+  "hist",
+  "tqdm",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/philippgadow/pixel-calibration/"
+
+[project.scripts]
+analyse = "pixel_calibration.analyse:main"
+calibrate_threshold = "pixel_calibration.calibrate_threshold:main"
+create_masked_matrix = "pixel_calibration.create_masked_matrix:main"
+create_daq_script = "pixel_calibration.create_daq_script:main"
+
+[tool.setuptools]
+packages = ["pixel_calibration"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "pixel_calibration.__version__"}
+
+[build-system]
+requires = ["setuptools>=62"]
+build-backend = "setuptools.build_meta"
