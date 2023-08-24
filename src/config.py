@@ -10,10 +10,12 @@ class Config:
         self.config_template = None
         self.htcondor_config = None
         self.measurements = []
+        self.columns = {}
         self.calibration = {}
         self.labels = {}
         self.colours = {}
         self.plotting= {}
+        self.fitting = {}
 
     def load(self):
         with open(self.file_path, 'r') as file:
@@ -25,10 +27,12 @@ class Config:
             self.config_template = data.get('config_template', None)
             self.htcondor_config = data.get('htcondor_config', None)
             self.measurements = data.get('measurements', [])
+            self.columns = data.get('columns', {})
             self.calibration = data.get('calibration_energy_keV', {})
             self.labels = data.get('labels', {})
             self.colours = data.get('colours', {})
             self.plotting = data.get('plotting', {})
+            self.fitting = data.get('fitting', {})
 
     def __str__(self):
         return f"Config:\n  Name: {self.name}\n  Input Dir: {self.input_dir}\n  Matrix File: {self.matrix_file}\n  Detectors File: {self.detectors_file}\n  Config Template: {self.config_template}\n  HTCondor Config: {self.htcondor_config}\n  Measurements: {self.measurements}"

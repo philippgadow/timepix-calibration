@@ -87,11 +87,17 @@ def main(args=None):
         jobsub_executable = "./corryvreckan/jobsub/jobsub.py"
         config_file = join(base_dir, "configs", "run.conf")
 
+        # local test
+        # run([jobsub_executable, "-c", config_file, "1300"])
+
         for t in thresholds:
+            output_file = join(base_dir, "output", f"histograms_{t}.root")
+            if exists(output_file): continue
             if config.htcondor_config:
                 run([jobsub_executable, "-c", config_file, "--htcondor-file", config.htcondor_config, f"{t}"])
             else:
                 run([jobsub_executable, "-c", config_file, f"{t}"])
+
 
 if __name__ == "__main__":
     main()

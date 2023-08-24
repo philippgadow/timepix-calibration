@@ -10,25 +10,63 @@ htcondor_config: "data/corry/htcondor.sub"
 # htcondor_config: false
 
 measurements:
-- aluminium_totcnt_1ms_20r
-- calcium_totcnt_1ms_20r
+# - aluminium_totcnt_1ms_20r
+# - calcium_totcnt_1ms_20r
 - copper_totcnt_1ms_20r
 - iron_totcnt_1ms_20r
 - null_totcnt_1ms_20r
 - titanium_totcnt_1ms_20r
 
+columns:
+  # "all": 'CalibrationCLICpix2/detector1/pixelCharge_all'
+  "even": 'CalibrationCLICpix2/detector1/pixelCharge_even'
+  "odd": 'CalibrationCLICpix2/detector1/pixelCharge_odd'
+
+# list of k-alpha peaks: https://xdb.lbl.gov/Section1/Table_1-2.pdf
 calibration_energy_keV:
-  "aluminium_totcnt_1ms_20r": 1.5
-  "calcium_totcnt_1ms_20r": 3.7
-  "titanium_totcnt_1ms_20r": 4.5
-  "iron_totcnt_1ms_20r": 6.4
+  "aluminium_totcnt_1ms_20r": 1.487
+  "calcium_totcnt_1ms_20r": 3.691
+  "titanium_totcnt_1ms_20r": 4.511
+  "iron_totcnt_1ms_20r": 6.404
   "null_totcnt_1ms_20r": 0
-  "copper_totcnt_1ms_20r": 8.0
+  "copper_totcnt_1ms_20r": 8.048
+
+fitting:
+  lowest_threshold:
+    "aluminium_totcnt_1ms_20r": 1230
+    "calcium_totcnt_1ms_20r": 1230
+    "titanium_totcnt_1ms_20r": 1200
+    "iron_totcnt_1ms_20r": 1200
+    "copper_totcnt_1ms_20r": 1200
+
+  fit_double_gaussian:
+    "aluminium_totcnt_1ms_20r": False
+    "calcium_totcnt_1ms_20r": False
+    "titanium_totcnt_1ms_20r": False
+    "iron_totcnt_1ms_20r": False
+    "copper_totcnt_1ms_20r": False
+    "null_totcnt_1ms_20r": False
+
+  fitrange_nstddev:
+    "aluminium_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+    "calcium_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+    "titanium_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+    "iron_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+    "copper_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+    "null_totcnt_1ms_20r": [.5, 1., 1.5, 2.]
+
+  derivative_bandwith:
+    "aluminium_totcnt_1ms_20r": 50
+    "calcium_totcnt_1ms_20r": 50
+    "titanium_totcnt_1ms_20r": [8, 10, 12, 14]
+    "iron_totcnt_1ms_20r": [10, 15, 20, 25]
+    "copper_totcnt_1ms_20r": [10, 15, 20, 25]
+    "null_totcnt_1ms_20r": [6, 8, 10, 12]
 
 plotting:
   xlim: [1100, 1600]
   xlabel: 'Threshold [a.u.]'
-  ylabel: 'Normalised single pixel counts [a.u.]'
+  ylabel: 'Normalised total pixel counts [a.u.]'
   # yscale: "log"
 
 labels:
