@@ -57,7 +57,9 @@ def main(args=None):
     htcondor_dir = join("output", "batch")
     makedirs(htcondor_dir, exist_ok=True)
 
-    for measurement in config.measurements:
+    # unpack measurements from the config file groups and process all of them
+    measurements = sum(config.measurements.values(),[])
+    for measurement in measurements:
         print(measurement)
         input_dir = join(config.input_dir, measurement)
         name = join(config.name, measurement)
@@ -90,13 +92,21 @@ def main(args=None):
         # local test
         # run([jobsub_executable, "-c", config_file, "1300"])
 
+        # local submission
         for t in thresholds:
             output_file = join(base_dir, "output", f"histograms_{t}.root")
             if exists(output_file): continue
-            if config.htcondor_config:
-                run([jobsub_executable, "-c", config_file, "--htcondor-file", config.htcondor_config, f"{t}"])
-            else:
-                run([jobsub_executable, "-c", config_file, f"{t}"])
+            run([jobsub_executable, "-c", config_file, f"{t}"])
+
+
+        # HTCondor submission
+        # for t in thresholds:
+        #     output_file = join(base_dir, "output", f"histograms_{t}.root")
+        #     if exists(output_file): continue
+        #     if config.htcondor_config:
+        #         run([jobsub_executable, "-c", config_file, "--htcondor-file", config.htcondor_config, f"{t}"])
+        #     else:
+        #         run([jobsub_executable, "-c", config_file, f"{t}"])
 
 
 if __name__ == "__main__":

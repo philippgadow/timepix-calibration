@@ -9,7 +9,7 @@ class Config:
         self.detectors_file = None
         self.config_template = None
         self.htcondor_config = None
-        self.measurements = []
+        self.measurements = {}
         self.columns = {}
         self.calibration = {}
         self.labels = {}
@@ -26,7 +26,7 @@ class Config:
             self.detectors_file = data.get('detectors_file', None)
             self.config_template = data.get('config_template', None)
             self.htcondor_config = data.get('htcondor_config', None)
-            self.measurements = data.get('measurements', [])
+            self.measurements = data.get('measurements', {})
             self.columns = data.get('columns', {})
             self.calibration = data.get('calibration_energy_keV', {})
             self.labels = data.get('labels', {})

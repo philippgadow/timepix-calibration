@@ -63,28 +63,28 @@ def main(args=None):
     config = Config(args.config_file)
     config.load()
 
-    plotting_args = config.plotting
+    for measurement_group_name, measurements in config.measurements.items():
+        extract_measurement_group(measurement_group_name, measurements, config)
 
+
+def extract_measurement_group(measurement_group_name, measurements, config):
+    plotting_args = config.plotting
     base_dir = join("output", "corry", config.name)
-    output_dir = join("output", "scans", config.name)
+    output_dir = join("output", "scans", config.name, measurement_group_name)
     makedirs(output_dir, exist_ok=True)
 
-    plot_dir = join(output_dir, "plots")
+    plot_dir = join(output_dir, "plots_tot")
     makedirs(plot_dir, exist_ok=True)
 
-    for measurement, column in product(config.measurements, config.columns):
-        data_tag = f'{measurement}_{column}'
+    for measurement, column in product(measurements, config.columns):
+        data_tag = f'{measurement_group_name}_{measurement}_{column}'
         print(data_tag)
         input_dir = join(base_dir, measurement, "output")
         histpath = config.columns[column]
         outputfile_counts_name = join(output_dir, f'ths_counts_{data_tag}.csv')
 
-        ths_min, ths_max = plotting_args['xlim']
         h2d = hist.Hist(
-            # hist.axis.Regular((int(ths_max) - int(ths_min)), int(ths_min), int(ths_max), name="threshold"),
-            hist.axis.Regular(200, 1100, 1300, name="threshold"),
-            # hist.axis.Regular(8192, -0.5, 8191.5, name="values")
-            # hist.axis.Regular(256, -0.5, 255.5, name="values")
+            hist.axis.Regular(600, 1100, 1700, name="threshold"),
             hist.axis.Regular(32, -0.5, 31.5, name="values")
         )
 
@@ -111,17 +111,14 @@ def main(args=None):
                     h2d.fill(threshold=threshold, values=center, weight=weight)
 
         # create 2D plots of threshold vs ToT
-        makedirs(join(plot_dir, data_tag), exist_ok=True)
-
         plt.style.use(hep.style.ROOT)
         fig, ax = plt.subplots()
         values, _, _ = h2d.to_numpy()
         plt.title(f"{measurement} ({column})")
         hep.hist2dplot(h2d, ax=ax, cmap='inferno', vmin=0, vmax=0.1 * np.max(values))
         fig.tight_layout()
-        fig.savefig(join(plot_dir, data_tag, f'ths_tot_{data_tag}.png'))
+        fig.savefig(join(plot_dir, f'ths_tot_{data_tag}.png'))
         plt.close()
-
 
 
 if __name__ == "__main__":

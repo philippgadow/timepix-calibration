@@ -184,9 +184,14 @@ def main(args=None):
     args = parse_args(args)
     config = Config(args.config_file)
     config.load()
+    
+    # process measurement groups
+    for measurement_group_name, measurements in config.measurements.items():
+        process_measurement_group(measurement_group_name, measurements, config)
 
+
+def process_measurement_group(measurement_group_name, measurements, config):
     calibration =config.calibration
-
     labels =config.labels
     colours = config.colours
     plotting_args = config.plotting
@@ -196,17 +201,16 @@ def main(args=None):
     x_limit_high = int(plotting_args['xlim'][1])
     x_bins = x_limit_high - x_limit_low
 
-    base_dir = join("output", "scans", config.name)
-    plot_dir = join(base_dir, "plots")
+    base_dir = join("output", "scans", config.name, measurement_group_name)
+    plot_dir = join(base_dir, "plots_cnt")
     makedirs(plot_dir, exist_ok=True)
 
-    hists = {}
-
     # collect histograms
-    for measurement, column in product(config.measurements, config.columns):
+    hists = {}
+    for measurement, column in product(measurements, config.columns):
         data_tag = f'{measurement}_{column}'
-        print('Collecting data for ',measurement, column)
-        csvfile_name = join(base_dir, f'ths_counts_{data_tag}.csv')
+        print(f'Collecting data for {data_tag}')
+        csvfile_name = join(base_dir, f'ths_counts_{measurement_group_name}_{data_tag}.csv')
 
         data = np.genfromtxt(csvfile_name, delimiter=',')
         if len(data) == 0: continue
@@ -230,7 +234,7 @@ def main(args=None):
 
     # fit histograms
     fitresults = {}
-    for measurement, column in product(config.measurements, config.columns):
+    for measurement, column in product(measurements, config.columns):
         print('Fitting ',measurement, column)
         data_tag = f'{measurement}_{column}'
         makedirs(join(plot_dir, data_tag), exist_ok=True)
