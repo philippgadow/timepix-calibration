@@ -43,11 +43,11 @@ fitting:
   lowest_threshold:
     "aluminium_totcnt_1ms_20r": 1230
     "calcium_totcnt_1ms_20r": 1230
-    "titanium_totcnt_1ms_20r": 1200
-    "iron_totcnt_1ms_20r": 1200
-    "copper_totcnt_1ms_20r": 1200
-    "ironsource_totcnt_200ms_100r": 1200
-    "cadmiumsource_totcnt_200ms_100r": 1200
+    "titanium_totcnt_1ms_20r": 1230
+    "iron_totcnt_1ms_20r": 1250
+    "copper_totcnt_1ms_20r": 1250
+    "ironsource_totcnt_200ms_100r": 1250
+    "cadmiumsource_totcnt_200ms_100r": 1250
 
   fit_double_gaussian:
     "aluminium_totcnt_1ms_20r": False
