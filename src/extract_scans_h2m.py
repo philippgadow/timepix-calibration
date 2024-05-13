@@ -41,7 +41,7 @@ def process_file(filename):
     # open csv file with pandas, ignore first 7 rows, ignore comments starting with "====", split by ","
     # header is (row, column, acq_mode, value)
     data = pd.read_csv(filename, skiprows=7, comment='=', sep=',', names=['row', 'column', 'acq_mode', 'count'])
-    # only use the first 200 rows, as the rest might suffer from uint16 limitations
+    # only use the first 100 rows, as the rest might suffer from uint16 limitations
     data = data[:100]
     n_single_pixel_clusters = data['count'].sum()
     
