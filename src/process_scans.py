@@ -94,18 +94,26 @@ def fitHistogram(input_hist, measurement, n_stddev, bandwidth, fitting_args, lab
         hist[...] = hist_data
 
     # get reasonable start values for fit
-    peaks, _ = find_peaks(hist_data)
-    highest_peak_index = np.argmax(hist_data[peaks])
-    highest_peak_position = peaks[highest_peak_index]
-    highest_peak_value = hist_data[highest_peak_position]
-    highest_peak_bin_center = bin_centers[peaks][highest_peak_index]
+    try:
+        peaks, _ = find_peaks(hist_data, width=4)
+        peaks_widths = peak_widths(hist_data, peaks, rel_height=0.7)
+        rightmost_peak_index = peaks[-1]
+    except IndexError:
+        peaks, _ = find_peaks(hist_data, width=1)
+        peaks_widths = peak_widths(hist_data, peaks, rel_height=0.5)
+        rightmost_peak_index = peaks[-1]
 
-    results_widths = peak_widths(hist_data, peaks, rel_height=0.5)
-    fwhm = results_widths[0][highest_peak_index]
+    # find the index of the rightmost peak
+    rightmost_peak_index = peaks[-1]
+    hist_bin_right = bin_centers[rightmost_peak_index]
+    hist_data_right = hist_data[rightmost_peak_index]
+    fwhm = peaks_widths[0][0]
 
-    initial_amplitude = highest_peak_value
-    initial_mean = highest_peak_bin_center
+    initial_amplitude = hist_data_right
+    initial_mean = hist_bin_right
     initial_sigma = fwhm / 2.35482004503
+
+    print('Initial values for fit: ', initial_amplitude, initial_mean, initial_sigma)
 
     # define fit functions
     def gaussian(x, amplitude, mean, sigma):
@@ -199,7 +207,7 @@ def process_measurement_group(measurement_group_name, measurements, config):
 
     x_limit_low = int(plotting_args['xlim'][0])
     x_limit_high = int(plotting_args['xlim'][1])
-    x_bins = x_limit_high - x_limit_low
+    x_bins = x_limit_high - x_limit_low + 1
 
     base_dir = join("output", "scans", config.name, measurement_group_name)
     plot_dir = join(base_dir, "plots_cnt")
