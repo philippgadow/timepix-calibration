@@ -3,12 +3,8 @@ import re
 import logging
 import numpy as np
 import hist
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
-import mplhep as hep
 import pandas as pd
+import shutil
 
 from itertools import product
 from os import listdir, makedirs
@@ -42,7 +38,7 @@ def process_file(filename):
     # header is (row, column, acq_mode, value)
     data = pd.read_csv(filename, skiprows=7, comment='=', sep=',', names=['row', 'column', 'acq_mode', 'count'])
     # only use the first 100 rows, as the rest might suffer from uint16 limitations
-    data = data[:100]
+    data = data[:200]
     n_single_pixel_clusters = data['count'].sum()
     
     # restrict n_bins to 256, no long_count mode for H2M
@@ -63,13 +59,24 @@ def main(args=None):
 
 
 def extract_measurement_group(measurement_group_name, measurements, config):
-    plotting_args = config.plotting
-    base_dir = join("output", "peary", config.name)
-    output_dir = join("output", "scans", config.name, measurement_group_name)
-    makedirs(output_dir, exist_ok=True)
 
-    plot_dir = join(output_dir, "plots_tot")
-    makedirs(plot_dir, exist_ok=True)
+    input_dir = config.input_dir
+    base_dir = join("output", "peary", config.name, config.timestamp)
+    makedirs(base_dir, exist_ok=True)
+
+    # copy the directories inside of input_dir to base_dir
+    for measurement in measurements:
+        input_measurement_dir = join(input_dir, measurement)
+        output_measurement_dir = join(base_dir, measurement)
+
+        # only copy if file does not already exist
+        try:
+            listdir(output_measurement_dir)
+        except FileNotFoundError:
+            shutil.copytree(input_measurement_dir, output_measurement_dir)
+
+    output_dir = join("output", "scans", config.name, config.timestamp, measurement_group_name)
+    makedirs(output_dir, exist_ok=True)
 
     for measurement, column in product(measurements, config.columns):
         data_tag = f'{measurement_group_name}_{measurement}_{column}'
@@ -77,11 +84,6 @@ def extract_measurement_group(measurement_group_name, measurements, config):
         input_dir = join(base_dir, measurement)
 
         outputfile_counts_name = join(output_dir, f'ths_counts_{data_tag}.csv')
-
-        h2d = hist.Hist(
-            hist.axis.Regular(600, 1100, 1700, name="threshold"),
-            hist.axis.Regular(32, -0.5, 31.5, name="values")
-        )
 
         with open(outputfile_counts_name, 'w') as file_count:
             for f in tqdm(sorted(listdir(input_dir))):
@@ -98,27 +100,11 @@ def extract_measurement_group(measurement_group_name, measurements, config):
                 line = f"{threshold},{n_single_pixel_cluster}\n"
                 file_count.write(line)
                 
-                # fill hist
-                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-                for center, weight in zip(bin_centers, bin_values):
-                    h2d.fill(threshold=threshold, values=center, weight=weight)
-
         # sort outputfile_counts_name by threshold
-        header = f'# {config.name}/{measurement} ({column})\n#threshold,counts'
+        header = f'# {config.name}/{config.timestamp}/{measurement} ({column})\n#threshold,counts'
         df = pd.read_csv(outputfile_counts_name, names=['threshold', 'counts'])
-        print(df)
         df = df.sort_values(by=['threshold'])
         df.to_csv(outputfile_counts_name, index=False, header=header)
-
-        # # create 2D plots of threshold vs ToT
-        # plt.style.use(hep.style.ROOT)
-        # fig, ax = plt.subplots()
-        # values, _, _ = h2d.to_numpy()
-        # plt.title(f"{measurement} ({column})")
-        # hep.hist2dplot(h2d, ax=ax, cmap='inferno', vmin=0, vmax=0.1 * np.max(values))
-        # fig.tight_layout()
-        # fig.savefig(join(plot_dir, f'ths_tot_{data_tag}.png'))
-        # plt.close()
 
 
 if __name__ == "__main__":

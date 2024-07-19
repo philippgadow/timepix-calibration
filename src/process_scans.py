@@ -209,7 +209,7 @@ def process_measurement_group(measurement_group_name, measurements, config):
     x_limit_high = int(plotting_args['xlim'][1])
     x_bins = x_limit_high - x_limit_low + 1
 
-    base_dir = join("output", "scans", config.name, measurement_group_name)
+    base_dir = join("output", "scans", config.name, config.timestamp, measurement_group_name)
     plot_dir = join(base_dir, "plots_cnt")
     makedirs(plot_dir, exist_ok=True)
 
@@ -272,13 +272,18 @@ def process_measurement_group(measurement_group_name, measurements, config):
             'threshold_err_sys': np.std(fit_results_threshold),
         }
 
-    # save to csv files with numpy
+    # final calibration result
     for column in config.columns:
         data = []
         for data_tag, values in fitresults.items():
             if column not in data_tag: continue
             # shitty way of coding, I know...
             measurement = data_tag.replace('_all', '').replace('_odd', '').replace('_even', '')
+            if measurement in config.overwrite_threshold:
+                print(f'Overwriting threshold for {measurement} with {config.overwrite_threshold[measurement]}')
+                values['threshold'] = config.overwrite_threshold[measurement][0]
+                values['threshold_err_stat'] = config.overwrite_threshold[measurement][1]
+                values['threshold_err_sys'] = 0.
             energy_keV = float(calibration[measurement])
             energy_eh = energy_keV / 3.65 * 1000. # 3.65 eV to create e/h pair in Si
             row = [energy_keV, energy_eh, values['threshold'], values['threshold_err_stat'], values['threshold_err_sys']]
@@ -296,21 +301,44 @@ def process_measurement_group(measurement_group_name, measurements, config):
         y_err_total = np.sqrt(np.power(y_err_stat, 2) + np.power(y_err_syst, 2))
 
         weights_polyfit = np.power(np.array(y_err_total), -1)
-        coefficients = np.polyfit(x, y, deg=1, w=weights_polyfit)
-        slope = coefficients[0]
-        intercept = coefficients[1]
+
+        try:
+            coefficients, cov_matrix = np.polyfit(x, y, deg=1, w=weights_polyfit, cov=True)
+            slope = coefficients[0]
+            intercept = coefficients[1]
+
+            slope_uncertainty = np.sqrt(cov_matrix[0, 0])
+            intercept_uncertainty = np.sqrt(cov_matrix[1, 1])
+            inverse_slope_uncertainty = slope_uncertainty / (slope ** 2)
+
+        except ValueError:
+            coefficients = np.polyfit(x, y, deg=1, w=weights_polyfit)
+            slope = coefficients[0]
+            intercept = coefficients[1]
+
+            # Direct calculation of slope and intercept for two data points
+            slope = (y[-1] - y[0]) / (x[1] - x[0])
+            intercept = y[0] - slope * x[0]
+            # Error propagation for the slope and intercept
+            slope_uncertainty = np.sqrt((y_err_total[0]**2 + y_err_total[1]**2) / (x[1] - x[0])**2)
+            intercept_uncertainty = np.sqrt(
+                y_err_total[0]**2 + (slope_uncertainty * x[0])**2 + (slope * x[0] * (y_err_total[1]**2 + y_err_total[0]**2) / (x[1] - x[0])**2)
+            )
+            # Error propagation for 1/slope
+            inverse_slope_uncertainty = slope_uncertainty / (slope ** 2)
+
         fitted_line = slope * np.array(x) + intercept
         inv_slope = 1./slope
 
         # make plot
         plt.style.use(hep.style.ROOT)
         fig, ax = plt.subplots()
-        plt.xlabel('Energy [$e^{-}$-hole pairs]')
+        plt.xlabel('Energy [$e^{-}]')
         plt.ylabel('Threshold [DAC]')
         ax.errorbar(np.array(x), np.array(y), fmt='o', yerr=y_err_total)
         ax.plot(x, fitted_line, color='red', label='Fitted Line')
-        ax.text(0.05, 0.95, f'Best fit: {slope:.3f} x + {intercept:.3f}', ha='left', va='top', transform=plt.gca().transAxes, color='black')
-        ax.text(0.05, 0.90, f'Calibration: {inv_slope:.3f} $e^{{-}}$-hole pairs / DAC', ha='left', va='top', transform=plt.gca().transAxes, color='black')
+        ax.text(0.05, 0.95, f'Best fit: {slope:.3f} ± {slope_uncertainty:.3f} x + {intercept:.1f} ± {intercept_uncertainty:.1f}', ha='left', va='top', transform=plt.gca().transAxes, color='black')
+        ax.text(0.05, 0.90, f'Calibration: {inv_slope:.1f} ± {inverse_slope_uncertainty:.1f} $e^{{-}}$ / DAC', ha='left', va='top', transform=plt.gca().transAxes, color='black')
         fig.tight_layout()
         fig.savefig(join(base_dir, f'calibration_plot_{column}.png'))
         plt.close()
