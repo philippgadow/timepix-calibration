@@ -1,10 +1,11 @@
 # Pixel calibration
 
-> This software provides means of calibrating silicon pixel detectors. It is based on [corrywreckan](https://gitlab.cern.ch/corryvreckan/corryvreckan) for the efficient analysis of measurements and provides subsequent processing and evaluation of these using python.
+> This software provides means of calibrating silicon pixel detectors. 
+> It uses input from `csv` files which can be either read in stand-alone or using the [corrywreckan](https://gitlab.cern.ch/corryvreckan/corryvreckan) software for the efficient analysis of measurements.
 
 ## Setup
 
-Please follow these instructions to install the software. Doing so will download the software and the corrywreckan project as a git submodule. If you miss the `--recursive` argument for `git clone`, you can enter `git submodule init && git submodule update` to obtain corrywreckan.
+Please follow these instructions to install the software. Doing so will download the software and the corrywreckan project as a git submodule. If you forgot to add the `--recursive` argument for `git clone`, you can enter `git submodule init && git submodule update` to obtain corrywreckan.
 
 It is assumed that you are running this software on lxplus. Otherwise, some manual intervention might be needed to install corrywreckan.
 
@@ -21,7 +22,42 @@ source setup.sh
 This software will be installed in a virtual environment.
 
 
-## Use
+## Use without corrywreckan (for H2M)
+
+The calibration involves two steps and assumes you have acquired data previously in either `root` format or `csv` format, with one measurement file per threshold, all stored in one directory.
+
+1. Extracting data from the `root` or `csv` files
+2. Analysis of data to obtain calibration
+
+The design paradigm of this software is to disentangle configuration and code, therefore all information relevant for a device calibration has to be provided in a configuration file in `yaml` format.
+
+### Preparation 
+
+For a calibration of a device, you should provide the following:
+
+- Configuration file: look at [`data/assets/H2M-2_1p2V_ikrum10/calibration_config.yaml`](https://github.com/philippgadow/pixel-calibration/blob/main/data/assets/H2M-2_1p2V_ikrum10/calibration_config.yaml) for an example
+
+### Running
+
+You can run the full calibration with the following commands.
+
+```bash
+python src/extract_scans.py data/assets/H2M-2_1p2V_ikrum10/calibration_config.yaml
+```
+
+This will extract the s-curves from the input files.
+
+You find the output in `output/`.
+
+
+```bash
+python src/process_scans.py data/assets/H2M-2_1p2V_ikrum10/calibration_config.yaml
+```
+
+This will perform the actual calibration. You find the output in `output/`.
+
+
+## Use with corrywreckan (for CLICpix2)
 
 The calibration involves three steps and assumes you have acquired data previously in a format accessible to [corrywreckan](https://gitlab.cern.ch/corryvreckan/corryvreckan) `EventLoader` class appropriate to the device under test. 
 

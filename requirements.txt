@@ -1,3 +1,9 @@
+pyyaml
 hist
 mplhep
-
+numpy
+pandas
+matplotlib
+rich
+scipy
+uproot
