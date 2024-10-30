@@ -1,59 +1,35 @@
 # specific settings for device
 name: "H2M-2_3p6V_ikrum21"
 timestamp: "2024-06-11"
-input_dir: "data/measurements/H2M-2_3p6V_ikrum21/2024-06-11/"
 
 measurements:
-  source:
-    - null_totcnt_200ms_500r
-    - ironsource_totcnt_200ms_500r
-    # - cadmiumsource_totcnt_2s_2000r
+  null_baseline:
+    group: source    
+    type: baseline
+    properties:
+      calibration_energy_keV: 0
+      label: "No source"
+      colour: "gray"
+      peak_mean: 98.62
+      peak_width: 0.01
 
-columns:
-  "all": None
-
-# list of k-alpha peaks: https://xdb.lbl.gov/Section1/Table_1-2.pdf
-calibration_energy_keV:
-  "ironsource_totcnt_200ms_500r": 5.899
-  "cadmiumsource_totcnt_2s_2000r": 23.174
-  "null_totcnt_200ms_500r": 0
-
-overwrite_threshold:
-  null_totcnt_200ms_500r: [98.62, 0.01]
-
-fitting:
-  lowest_threshold:
-    "ironsource_totcnt_200ms_500r": 140
-    "cadmiumsource_totcnt_2s_2000r": 90
-    "null_totcnt_200ms_500r": 60
-
-  fit_double_gaussian:
-    "ironsource_totcnt_200ms_500r": False
-    "cadmiumsource_totcnt_2s_2000r": False
-    "null_totcnt_200ms_500r": False
-
-  fitrange_nstddev:
-    "ironsource_totcnt_200ms_500r": [1., 2.]
-    "cadmiumsource_totcnt_2s_2000r": [1.]
-    "null_totcnt_200ms_500r": [1., 2.]
-
-  derivative_bandwith:
-    "ironsource_totcnt_200ms_500r": [4, 5]
-    "cadmiumsource_totcnt_2s_2000r": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    "null_totcnt_200ms_500r": [4]
+  ironsource_cnt_200ms_500r:
+    group: source
+    type: fit_spectrum
+    properties:
+      calibration_energy_keV: 5.899
+      label: "Fe-55 source (5.9 keV)"
+      colour: "cyan"
+      input_dir: "data/measurements/H2M-2_3p6V_ikrum21/2024-06-11/ironsource_totcnt_200ms_500r/"
+      lowest_threshold: 140
+      peak_prior: auto
+      peak_width: auto
+      fitrange_sigmoid: [140, 160]
+      fitrange_nstddev: [0.5, 0.75]
+      derivative_bandwith:  [1., 2.]
 
 plotting:
   xlim: [70, 250]
   xlabel: 'Threshold [a.u.]'
-  ylabel: 'Normalised total pixel counts [DAC]'
+  ylabel: 'Total pixel counts [a.u.]'
   # yscale: "log"
-
-labels:
-  "ironsource_totcnt_200ms_500r": "Fe-55 source (5.9 keV)"
-  "cadmiumsource_totcnt_2s_2000r": "Cadmium (23.2 keV)"
-  "null_totcnt_200ms_500r": "No source"
-
-colours:
-  "ironsource_totcnt_200ms_500r": "cyan"
-  "cadmiumsource_totcnt_2s_2000r": "purple"
-  "null_totcnt_200ms_500r": "gray"

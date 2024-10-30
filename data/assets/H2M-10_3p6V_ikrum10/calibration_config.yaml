@@ -1,0 +1,35 @@
+# specific settings for device
+name: "H2M-10_3p6V_ikrum10"
+timestamp: "2024-10-09"
+
+measurements:
+  null_baseline:
+    group: source    
+    type: baseline
+    properties:
+      calibration_energy_keV: 0
+      label: "No source"
+      colour: "gray"
+      peak_mean: 97.4
+      peak_width: 1.47
+
+  ironsource_cnt_200ms_2500r:
+    group: source
+    type: fit_spectrum
+    properties:
+      calibration_energy_keV: 5.899
+      label: "Fe-55 source (5.9 keV)"
+      colour: "cyan"
+      input_dir: "data/measurements/H2M-10_3p6V_ikrum10/2024-10-09/ironsource_cnt_200ms_2500r"
+      lowest_threshold: 140
+      peak_prior: auto
+      peak_width: auto
+      fitrange_sigmoid: [145, 160]
+      fitrange_nstddev: [0.5, 0.75]
+      derivative_bandwith:  [1., 2.]
+
+plotting:
+  xlim: [70, 250]
+  xlabel: 'Threshold [a.u.]'
+  ylabel: 'Normalised total pixel counts [a.u.]'
+  # yscale: "log"
